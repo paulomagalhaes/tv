@@ -1,7 +1,7 @@
 library(RJDBC)
 drv <- JDBC("oracle.jdbc.driver.OracleDriver",
             "/Users/paulomagalhaes/Projects/OiTv/ojdbc6.jar")
-conn <- dbConnect(drv, "jdbc:oracle:thin:@oracle01:1521:objoi02", "oidth0205", "oidth0205")
+conn <- dbConnect(drv, "jdbc:oracle:thin:@oracle01:1521:objoi02", "", "")
 
 contratos <- dbGetQuery(conn, 
 "SELECT c.id,
@@ -47,3 +47,4 @@ WHERE  c.id_tipo_contrato = t.id
        AND t.tipo_agrupamento != 'C'
        AND c.id_motivo_cancelamento = m.id (+) ")
 save(contratos, file=file.path('data', 'contratos.RData'))
+
