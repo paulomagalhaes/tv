@@ -67,13 +67,14 @@ extratos$'AnoMesEmissao' <- format(extratos$'Data Emissão', '%Y-%m')
 #e.by.conta <- aggregate (valor ~ ID_CONTA, extratos[!is.na(extratos$'Data Pagamento'),c('valor', 'ID_CONTA')], sum)
 
 load('data/contratos.RData')
+contratos$dataFimOuHoje <- as.Date(sapply(contratos$DATA_FIM, function (x) if (is.na(x)) as.Date("2013-05-02") else as.Date(x)) , as.Date('1970-01-01'))
+contratos$diasAtivo <- as.numeric(contratos$dataFimOuHoje - as.Date(contratos$DATA_INSTALACAO), units='days')
+contratos$diasAtivo[contratos$diasAtivo == 0 ] <- 1
 rec.por.contrato <- aggregate(extratos[!is.na(extratos$'Valor Pago') , c('ID_CONTA', 'Valor Pago')], by=list(extratos[!is.na(extratos$'Valor Pago') , ]$ID_CONTA), FUN=sum)
 contrato.rec <- merge(contratos, rec.por.contrato, by.x="ID", by.y="Group.1")
 #months <- length(seq(as.Date(contrato.rec$DATA_INSTALACAO), if(is.na(contrato.rec$DATA_FIM)) Sys.Date() else as.Date(contrato.rec$DATA_FIM), by="1 month") )
 
-contrato.rec$dataFimOuHoje <- as.Date(sapply(contrato.rec$DATA_FIM, function (x) if (is.na(x)) as.Date("2013-05-02") else as.Date(x)) , as.Date('1970-01-01'))
-contrato.rec$diasAtivo <- as.numeric(contrato.rec$dataFimOuHoje - as.Date(contrato.rec$DATA_INSTALACAO), units='days')
-contrato.rec$diasAtivo[contrato.rec$diasAtivo == 0 ] <- 1
+
 contrato.rec$arpu <- contrato.rec$'Valor Pago' / (contrato.rec$diasAtivo/30)
 
 jpeg('graphics/arpuBoxplot.jpg', width=800, height=800)
@@ -84,4 +85,12 @@ jpeg('graphics/TempoContratoBoxplot.jpg', width=800, height=800)
 boxplot(contrato.rec$diasAtivo, outline=F, col="blue", ylab="Dias", main="Tempo de Contrato")
 dev.off()
 
+churn.ultimo.ano <- contrato.rec[ contrato.rec$STATUS =="Cancelado Espont." & contrato.rec$'Valor Pago' > 0 & contrato.rec$DATA_FIM > '2012-05-02 00:00:00',]
 
+
+contratos.churn <- contratos [contratos$STATUS =="Cancelado Espont." & contratos$diasAtivo > 10 ,]
+contratos.churn$ANO_FIM <- substr(contratos.churn$DATA_FIM,1,4)
+
+jpeg('graphics/ChurnBarplot.jpg', width=800, height=800)
+barplot(table(contratos.churn$ANO_FIM), col="blue",ylab="Contratos",xlab="Ano", main="Contratos Cacelados Espontaneamente")
+dev.off()
