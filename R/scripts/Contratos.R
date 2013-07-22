@@ -48,3 +48,42 @@ WHERE  c.id_tipo_contrato = t.id
        AND c.id_motivo_cancelamento = m.id (+) ")
 save(contratos, file=file.path('data', 'contratos.RData'))
 
+pessoas <- dbGetQuery(conn, 
+" SELECT 
+      e.id id_endereco,
+      e.\"Logradouro\",
+      e.\"Número\",
+      e.\"Complemento\",
+      e.\"Bairro\",
+      e.\"CEP\",
+      e.\"Cidade\",
+      e.\"UF\",
+      e.\"POLO_NOME\",
+      e.\"POLO_SIGLA\",
+      c.id id_contrato,
+      c.tipo_contrato,
+      p.id id_pessoa,
+      p.id_classificacao,
+      p.\"TIPO\",
+      p.nome,
+      p.cgc_cpf,
+      p.rg_inscricao,
+      p.fantasia,
+      p.ramo_atividade ,
+      p.nascimento,
+      p.sexo,
+      p.email,
+      p.nome_mae,
+      p.nome_pai,
+      p.is_funcionario_operadora,
+      p.data_criacao,
+      p.is_fraudador,
+      p.is_suspeita_fraude,
+      p.vip
+FROM   al_pessoa p,
+       al_contratos c,
+       r_endereco e
+WHERE  c.id_endereco_instalacao = e.id
+       AND c.id_pessoa = p.id
+       AND c.tipo_contrato = 'NORMAL DTH'  ")
+save(pessoas, file=file.path('data', 'pessoas.RData'))
